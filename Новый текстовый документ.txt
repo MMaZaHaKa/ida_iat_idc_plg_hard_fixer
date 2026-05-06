@@ -1,0 +1,1 @@
+https://reverseengineering.stackexchange.com/questions/26667/rebuild-iat-after-manually-unpacking-dll

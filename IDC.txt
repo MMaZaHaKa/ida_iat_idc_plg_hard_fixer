@@ -1,0 +1,36 @@
+#include <idc.idc>
+
+static main()
+{
+    auto start, end, fp, ea, ptr, out;
+
+    start = AskAddr(ScreenEA(), "IAT start address");
+    if (start == BADADDR)
+        return;
+
+    end = AskAddr(start, "IAT end address (exclusive)");
+    if (end == BADADDR)
+        return;
+
+    out = AskFile(1, "*.txt", "Save addr/ptr table as");
+    if (out == 0)
+        return;
+
+    fp = fopen(out, "w");
+    if (fp == 0)
+    {
+        Message("Can't open output file\n");
+        return;
+    }
+
+    //fprintf(fp, "addr\tptr\n");
+
+    for (ea = start; ea < end; ea = ea + 4)
+    {
+        ptr = Dword(ea);
+        fprintf(fp, "0x%08X\t0x%08X\n", ea, ptr);
+    }
+
+    fclose(fp);
+    Message("Done: %s\n", out);
+}
