@@ -1,0 +1,1 @@
+add_func(0x3B1170, BADADDR);set_name(0x3B1170, "_ZN14CRunningScript17ProcessCommand_0_EP14CRunningScripti", SN_AUTO);

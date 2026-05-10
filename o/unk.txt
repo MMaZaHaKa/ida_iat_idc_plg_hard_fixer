@@ -1,0 +1,82 @@
+#include <idc.idc>
+
+static GetMZBase() {
+    auto base = SegStart(MinEA());
+    return base - 0x1000;
+}
+
+static GetMZBaseFunc() {
+    auto base = GetMZBase();
+    return base;
+}
+
+static main() {
+    auto base = GetMZBase();
+    auto file = AskFile(0, "*.*", "Select file with offsets");
+    if (file == 0) return;
+    
+    auto fp = fopen(file, "r");
+    if (fp == 0) return;
+    
+    auto line = ReadTxtLine(fp);
+    while (line != -1) {
+        auto offset = 0;
+        auto name = "";
+        
+        auto tab1 = strstr(line, "\t");
+        if (tab1 != -1) {
+            auto tab2 = strstr(line, "\t", tab1 + 1);
+            if (tab2 != -1) {
+                auto tab3 = strstr(line, "\t", tab2 + 1);
+                if (tab3 != -1) {
+                    auto tab4 = strstr(line, "\t", tab3 + 1);
+                    if (tab4 != -1) {
+                        auto tab5 = strstr(line, "\t", tab4 + 1);
+                        if (tab5 != -1) {
+                            auto offset_str = substr(line, tab4 + 1, tab5);
+                            offset = atol(offset_str);
+                            
+                            auto name_start = tab5 + 1;
+                            auto name_end = strlen(line);
+                            auto cr = strstr(line, "\r", name_start);
+                            if (cr != -1) name_end = cr;
+                            
+                            name = substr(line, name_start, name_end);
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (offset != 0 && name != "") {
+            auto address = base + offset;
+            MakeCode(address);
+            AddFunc(address, BADADDR);
+            SetName(address, name, SN_AUTO);
+            SetColor(address, CIC_FUNC, 0x00FF00);
+            Message("Added: %s at %x\n", name, address);
+        }
+        
+        line = ReadTxtLine(fp);
+    }
+    fclose(fp);
+    Message("Done!\n");
+}
+
+static ReadTxtLine(fp) {
+    auto line = "";
+    auto ch = fgetc(fp);
+    if (ch == -1) return -1;
+    
+    while (ch != -1 && ch != 10 && ch != 13) {
+        line = line + char(ch);
+        ch = fgetc(fp);
+    }
+    
+    if (ch == 13) {
+        ch = fgetc(fp);
+        if (ch != 10 && ch != -1) fseek(fp, -1, 1);
+    }
+    
+    return line;
+}
